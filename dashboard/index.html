@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Threat Protection HIDS - Dashboard</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px }
+      pre { background:#f4f4f4; padding:12px; overflow:auto }
+    </style>
+  </head>
+  <body>
+    <h1>Threat Protection HIDS — Dashboard</h1>
+    <p>Simple dashboard showing the latest events from the server.</p>
+    <button id="refresh">Refresh</button>
+    <div id="events"></div>
+
+    <script>
+      async function load() {
+        try {
+          const res = await fetch('/events/log');
+          const json = await res.json();
+          const container = document.getElementById('events');
+          container.innerHTML = '';
+          json.events.slice().reverse().forEach(e => {
+            const pre = document.createElement('pre');
+            pre.textContent = e;
+            container.appendChild(pre);
+          });
+        } catch (err) {
+          document.getElementById('events').textContent = 'failed to load events: ' + err;
+        }
+      }
+      document.getElementById('refresh').addEventListener('click', load);
+      load();
+    </script>
+  </body>
+</html>
