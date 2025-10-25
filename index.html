@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HIDS — Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>Host Intrusion Detection System</h1>
+      <p class="lead">Sign in to view host alerts and system status.</p>
+
+      <form id="loginForm">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" required autocomplete="username" />
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password" />
+
+        <button type="submit">Sign In</button>
+
+        <div id="msg" role="status" aria-live="polite"></div>
+      </form>
+
+      
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
