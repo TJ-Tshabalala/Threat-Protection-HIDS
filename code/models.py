@@ -1,5 +1,3 @@
-# models.py
-
 from datetime import datetime
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
@@ -35,7 +33,7 @@ class ThreatAnalysisResponse(ThreatAnalysisBase):
 class HidsAlertBase(SQLModel):
     """Base model for HIDS Alert data."""
     rule_id: int = Field(index=True)
-    level: int = Field(index=True)
+    level: int = Field(index=True,max_length=2)
     description: str
     full_log: str
     agent_id: str = Field(index=True)

@@ -1,5 +1,3 @@
-# main.py (Corrected Indentation)
-
 import os
 import httpx
 import json
@@ -102,21 +100,34 @@ async def analyze_with_ollama(alert: HidsAlert) -> ThreatAnalysisResponse:
     
     except httpx.HTTPError as e:
         print(f"HTTP Error during Ollama call: {e}")
+        # FIX: Safely construct detail message to avoid AttributeError on e.response.text
+        detail_msg = f"Failed to communicate with Ollama service. Error: {e}"
+        if e.response is not None:
+             detail_msg += f". Upstream Response: {e.response.text.strip()}"
+        
         raise HTTPException(
             status_code = status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Failed to communicate with Ollama service: {e.response.text}"
+            detail=detail_msg
         )
+        
     except Exception as e:
         print(f"Ollama Analysis Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to parse structured response from LLM: {e}"
+            detail=f"Failed to parse structured response from LLM: {e}"
         )
     # The analyze_with_ollama function ends here.
 
-# --- API Endpoints --- (UNINDENTED)
+
+# --- API Endpoints ---
+
+@app.get("/")
+def read_root():
+    """Basic health check route."""
+    return {"message": "HIDS Alert Analysis API is running."}
 
 @app.post("/alerts", response_model=HidsAlertRead, status_code=status.HTTP_201_CREATED)
+@app.post("/alerts/", response_model=HidsAlertRead, status_code=status.HTTP_201_CREATED)
 async def ingest_alert(alert_create: HidsAlertCreate, session: SessionDep):
     """
         Receives a new alert, stores it in the database and triggers LLM analysis
@@ -127,6 +138,11 @@ async def ingest_alert(alert_create: HidsAlertCreate, session: SessionDep):
     session.add(db_alert)
     session.commit()
     session.refresh(db_alert)
+    
+    # FIX: Check if ID was generated before proceeding (to avoid Pylance/NoneType issues)
+    if db_alert.id is None:
+        raise HTTPException(status_code=500, detail="Database insertion failed to return an alert ID.")
+
 
     # 2. Trigger asynchronous threat analysis
     try:
@@ -142,7 +158,7 @@ async def ingest_alert(alert_create: HidsAlertCreate, session: SessionDep):
     # 3. Store the results
     # The ThreatAnalysisResponse includes summary, recommendation, and model info
     db_analysis = ThreatAnalysis(
-        alert_id=int(db_alert.id),
+        alert_id=db_alert.id, # Use id directly, it's guaranteed to be an int now
         threat_summary=analysis_response.threat_summary,
         recommendation=analysis_response.recommendation,
         llm_model=OLLAMA_MODEL
@@ -154,6 +170,7 @@ async def ingest_alert(alert_create: HidsAlertCreate, session: SessionDep):
     return HidsAlertRead.from_orm(db_alert)
 
 @app.get("/alerts", response_model=List[HidsAlertRead])
+@app.get("/alerts/", response_model=List[HidsAlertRead])
 def read_alerts(session: SessionDep, offset: int=0, limit: int=100):
     """
         Get a list of HIDS alerts from the database.

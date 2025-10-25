@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Submission Dashboard</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        h1 { text-align: center; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type="number"], input[type="text"], textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        button { margin-top: 20px; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #response-message { margin-top: 20px; padding: 10px; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1> Submit New Alert</h1>
+
+    <form id="alert-form">
+        <label for="rule_id">Rule ID:</label>
+        <input type="number" id="rule_id" value="" required>
+
+        <label for="level">Level:</label>
+        <input type="number" min="1" max="10" id="level" required>
+
+        <label for="agent_id">Agent ID:</label>
+        <input type="text" id="agent_id" value="Wazuh-Agent-002" required>
+
+        <label for="description">Description:</label>
+        <input type="text" id="description" value="Malware File Detected" required>
+
+        <label for="full_log">Full Log:</label>
+        <textarea id="full_log" rows="4" required>Wazuh Alert 168454: File hash a1b2c3d4 was identified as known malware in <strong>C:\Program Files\App\file.exe</strong>
+        </textarea>
+
+        <button type="submit">Send Alert to API</button>
+    </form>
+
+    <div id="response-message"></div>
+
+    <script src="../code/app.js"></script>
+    </script>
+</body>
+</html>
