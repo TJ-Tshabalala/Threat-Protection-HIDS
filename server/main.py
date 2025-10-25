@@ -20,9 +20,9 @@ if os.getenv("REDIS_URL"):
     try:
         from .nonce_redis import is_replay as redis_is_replay
         nonce.is_replay = redis_is_replay
-        logger.info("Using Redis-backed nonce cache (REDIS_URL detected)")
+        logging.Logger.info("Using Redis-backed nonce cache (REDIS_URL detected)")
     except Exception as e:
-        logger.warning("Failed to initialize Redis nonce cache: %s; falling back to in-memory", e)
+        logging.warning("Failed to initialize Redis nonce cache: %s; falling back to in-memory", e)
 
 # --- Logging setup with rotation ---
 LOG_DIR = Path(os.getenv("LOG_DIR", "logs"))
