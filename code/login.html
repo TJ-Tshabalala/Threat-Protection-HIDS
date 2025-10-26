@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HIDS — Login</title>
+  <link rel="stylesheet" href="../code/login-page/style/styles.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>Host Intrusion Detection System</h1>
+      <p class="lead">Sign in to view host alerts and system status.</p>
+
+      <form id="loginForm">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" minlength="3" maxlength="15" pattern="[A-Za-z0-9]{3,16}" 
+        title="Username must be 3-15 alphanumeric characters"/>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required minlength="8" maxlength="16"
+        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,16}" title="Password must be 8-16 characters"/>
+
+        <button type="submit">Sign In</button>
+
+        <div id="msg" role="status" aria-live="polite"></div>
+      </form>
+
+      
+    </section>
+  </main>
+
+  <script src="../code/login-page/js/app.js"></script>
+</body>
+</html>

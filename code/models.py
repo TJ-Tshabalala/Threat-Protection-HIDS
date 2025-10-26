@@ -1,63 +1,61 @@
-from datetime import datetime
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, Relationship
+# Assuming this is in your models.py
 
-# --- 1. Threat Analysis Definitions ---
+from sqlmodel import SQLModel, Field, Relationship
+from typing import List, Optional
+
+# --- LLM Analysis Output Model ---
+class ThreatAnalysisResponse(SQLModel):
+    """
+    Schema for the structured JSON output from the LLM.
+    """
+    threat_summary: str
+    recommendation: str
+    # CRITICAL UPDATE: Add the severity score here
+    severity_score: int = Field(..., ge=1, le=10, description="Threat score from 1 (low) to 10 (high).")
+
+# --- Database Models ---
+
+class HidsAlertBase(SQLModel):
+    rule_id: int
+    description: str
+    agent_id: str
+    full_log: str
+
+class HidsAlert(HidsAlertBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # Relationship to analysis results
+    analysis: List["ThreatAnalysis"] = Relationship(back_populates="alert")
+    
+    # New Field for Automated Triage Action
+    triage_action: Optional[str] = None # Stores the final action (Escalate, Resolve, Lock User Out)
+
+class HidsAlertCreate(HidsAlertBase):
+    pass
+
+class HidsAlertRead(HidsAlertBase):
+    id: int
+    triage_action: Optional[str] = None
 
 class ThreatAnalysisBase(SQLModel):
-    """Base model for the LLM-generated threat analysis."""
-    # Ensure foreign_key is correct
-    alert_id: int = Field(foreign_key="hidsalert.id", unique=True, index=True) 
     threat_summary: str
     recommendation: str
     llm_model: str
-    analysis_timestamp: datetime = Field(default_factory=datetime.utcnow, nullable=False)
-
-# DB Table Model
+    # CRITICAL UPDATE: Store the severity score in the DB
+    severity_score: int
+    
 class ThreatAnalysis(ThreatAnalysisBase, table=True):
-    """Database table model, includes primary key."""
     id: Optional[int] = Field(default=None, primary_key=True)
+    alert_id: int = Field(foreign_key="hidsalert.id")
     
-    # Relationship to HidsAlert (Referenced by its string name "HidsAlert")
-    alert: "HidsAlert" = Relationship(back_populates="analysis") 
+    alert: HidsAlert = Relationship(back_populates="analysis")
 
-# Pydantic Model for LLM Response (for a structured LLM output)
-class ThreatAnalysisResponse(ThreatAnalysisBase):
-    """Pydantic model for the expected structured LLM response."""
-    # LLM doesn't generate alert_id, so remove it for the input validation
-    # This model is primarily for the output structure
-    pass 
+# --- Triage Models (New from flowchart logic) ---
 
-# --- 2. HIDS Alert Definitions ---
-
-class HidsAlertBase(SQLModel):
-    """Base model for HIDS Alert data."""
-    rule_id: int = Field(index=True)
-    level: int = Field(index=True,max_length=2)
-    description: str
-    full_log: str
-    agent_id: str = Field(index=True)
-    timestamp: datetime = Field(default_factory=datetime.utcnow, nullable=False)
-    
-# DB Table Model
-class HidsAlert(HidsAlertBase, table=True):
-    """Database table model, includes primary key."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # Relationship to ThreatAnalysis (Referenced by its string name "ThreatAnalysis")
-    analysis: Optional["ThreatAnalysis"] = Relationship(back_populates="alert")
-
-# Pydantic Model for API Input (Create)
-class HidsAlertCreate(HidsAlertBase):
-    """Pydantic model for receiving new alerts via POST."""
-    pass
-
-# Pydantic Model for API Response (Read - includes the ID)
-class HidsAlertRead(HidsAlertBase):
-    """Pydantic model for returning alerts from the API."""
-    id: int
-    
-# --- 3. Circular Dependency Resolution ---
-# THIS STEP IS CRUCIAL FOR SQLMODEL/PYDANTIC
-HidsAlert.update_forward_refs()
-ThreatAnalysis.update_forward_refs()
+class TriageResult(SQLModel):
+    """Output model for the final triage decision."""
+    severity: str
+    action: str
+    reason: str
+    escalation_target: str | None = None
+    documented: bool = False
