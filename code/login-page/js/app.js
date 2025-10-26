@@ -43,7 +43,7 @@
 
             // Simple client-side validation (replace with server-side for security)
             if (username === 'admin' && password === 'Cyb3rGang') {
-                window.location.href = '../Threat-Protection-HIDS/code/index.html'; // Redirect to dashboard
+                window.location.href = '../code/login-page/index.html'; // Redirect to dashboard
             } else {
                 alert('Invalid username or password.');
             }
